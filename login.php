@@ -1,0 +1,631 @@
+<?php
+    include('includes/config.php');
+
+    $message = "";
+
+    if(isset($_POST['submit'])) {
+        // 1- receive values from form.
+        $username = $_POST['username'];
+        $password = $_POST['password'];
+        
+        // 2- connect with the database.
+        if($conn) {
+            $sql = "SELECT * FROM users WHERE username = '$username'";
+            $result = mysqli_query($conn, $sql);
+            
+            if($result) {
+                $row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+                
+                if($row) {
+                    if($row['password'] == $password) {
+                        // 3- set session variables.
+                        $_SESSION['user_id'] = $row['id'];
+                        $_SESSION['username'] = $row['username'];
+                        $_SESSION['is_admin'] = $row['is_admin'];
+                        
+                        // 4- redirect to user dashboard.
+                        header("location: dashboard.php");
+                        exit();
+                    }
+                    else {
+                        $message = "You Entered Wrong Password";
+                    }
+                }
+                else {
+                    $message = "You Entered Wrong Login";
+                }
+            }
+            else {
+                $message = "Database Error";
+            }
+        }
+    }
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Login - StreamBox</title>
+    
+    <!-- CSS Style Sheet for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Style Sheet for Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Style Sheet (Inline Style) -->
+     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #0f0f1a;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .header {
+            background: rgba(15, 15, 26, 0.95);
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .logo i {
+            color: #ff4d4d;
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 30px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: #ff4d4d;
+        }
+        
+        .btn-register {
+            background: #ff4d4d;
+            padding: 10px 25px;
+            border-radius: 25px;
+            margin-left: 30px;
+            transition: all 0.3s;
+        }
+        
+        .btn-register:hover {
+            background: #ff3333;
+            transform: translateY(-2px);
+        }
+        
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                        url('https://images.unsplash.com/photo-1536440136628-849c177e76a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 50px 40px;
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(15px);
+            transform: translateY(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .login-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-header i {
+            color: #ff4d4d;
+            font-size: 60px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .login-header h1 {
+            font-size: 36px;
+            color: white;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .login-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 16px 16px 16px 50px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff4d4d;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.2);
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff4d4d, #ff3333);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #ff3333, #ff1a1a);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 77, 77, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 107, 107, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            accent-color: #ff4d4d;
+        }
+        
+        .forgot-password {
+            color: #ff4d4d;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 14px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+        }
+        
+        .social-login {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .social-btn {
+            flex: 1;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .social-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .login-footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        .login-footer p {
+            margin-bottom: 10px;
+        }
+        
+        .login-footer a {
+            color: #ff4d4d;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        .footer {
+            background: rgba(15, 15, 26, 0.95);
+            padding: 40px 0 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .footer-logo i {
+            color: #ff4d4d;
+            font-size: 32px;
+        }
+        
+        .footer-logo h3 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .footer-section h4 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-section ul a {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-section ul a:hover {
+            color: #ff4d4d;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .login-box {
+                padding: 40px 25px;
+                margin: 20px;
+            }
+            
+            .login-header h1 {
+                font-size: 28px;
+            }
+            
+            .login-header i {
+                font-size: 50px;
+            }
+            
+            .form-options {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .social-login {
+                flex-direction: column;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .login-header h1 {
+                font-size: 24px;
+            }
+            
+            .login-header p {
+                font-size: 14px;
+            }
+            
+            .form-group input {
+                padding: 14px 14px 14px 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.php" class="logo">
+                    <i class="fas fa-clapperboard"></i>
+                    StreamBox
+                </a>
+                <div class="nav-links">
+                    <a href="index.php">Home</a>
+                    <a href="movies.php">Movies</a>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="login.php">Login</a>
+                    <a href="register.php" class="btn-register">Sign Up</a>
+                </div>
+            </nav>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-box">
+                    <div class="login-header">
+                        <i class="fas fa-clapperboard"></i>
+                        <h1>Welcome Back</h1>
+                        <p>Sign in to your StreamBox account</p>
+                    </div>
+                    
+                    <form action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="post">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user"></i>
+                                <input type="text" name="username" placeholder="Enter your username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Password</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-lock"></i>
+                                <input type="password" name="password" placeholder="Enter your password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" name="remember">
+                                Remember me
+                            </label>
+                            <a href="forgot-password.php" class="forgot-password">
+                                Forgot password?
+                            </a>
+                        </div>
+                        
+                        <button type="submit" name="submit" class="btn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            Sign In
+                        </button>
+                        
+                        <?php if ($message): ?>
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                <?php echo $message; ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="divider">
+                            <span>Or continue with</span>
+                        </div>
+                        
+                        <div class="social-login">
+                            <button type="button" class="social-btn">
+                                <i class="fab fa-google"></i>
+                                Google
+                            </button>
+                            <button type="button" class="social-btn">
+                                <i class="fab fa-facebook"></i>
+                                Facebook
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="login-footer">
+                        <p>Don't have an account? <a href="register.php">Create account</a></p>
+                        <p><a href="index.php"><i class="fas fa-arrow-left"></i> Back to home</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-clapperboard"></i>
+                        <h3>StreamBox</h3>
+                    </div>
+                    <p>Your ultimate destination for movies and series. Watch anytime, anywhere.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.php">Home</a></li>
+                        <li><a href="movies.php">Movies</a></li>
+                        <li><a href="login.php">Login</a></li>
+                        <li><a href="register.php">Register</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact Info</h4>
+                    <ul>
+                        <li>Email: info@streambox.com</li>
+                        <li>Phone: +1 234 567 8900</li>
+                        <li>Address: 123 Movie Street</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 StreamBox. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
